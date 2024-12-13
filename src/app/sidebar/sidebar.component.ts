@@ -1,18 +1,35 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
+import config from '../../config';
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [RouterLink],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.css'
+  styleUrl: './sidebar.component.css',
 })
 export class SidebarComponent {
+  constructor(private http: HttpClient, private router: Router) { }
+
   name: string = '';
-   
-  ngOnInit(){
+  level: string = '';
+
+  ngOnInit() {
     this.name = localStorage.getItem('angular_name')!;
+    this.getLevelFromToken();
+  }
+
+  getLevelFromToken() {
+    const token = localStorage.getItem('angular_token')!;
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    this.http.get(config.apiServer + '/api/user/getLevelFromToken', { headers: headers })
+      .subscribe((res: any) => {
+        this.level = res.level;
+      });
   }
 
   async signout() {
@@ -30,7 +47,8 @@ export class SidebarComponent {
 
       location.reload();
 
+      // navigate to login page
+      this.router.navigate(['/']);
     }
   }
-
 }
